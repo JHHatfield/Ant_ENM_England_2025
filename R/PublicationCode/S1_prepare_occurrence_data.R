@@ -184,7 +184,7 @@ exhaustive_combined <- rbind(procter_df, gaitbarrows_df, hardcastle_df, nym_df, 
 # Surveys where volunteers mostly recorded one nest and then moved on
 
 ## BWARS data -------------------------------------------------------------
-bwars_formica_df <- read.csv('species_data/raw/20240105_bwars_data.csv') %>% 
+bwars_formica_df <- read.csv('../Data/species_data/raw/20240105_bwars_data.csv') %>% 
       mutate(easting = rnrfa::osg_parse(gridref)$easting,
              northing = rnrfa::osg_parse(gridref)$northing,
              accuracy = sapply(gridref, determine_accuracy),
@@ -206,7 +206,7 @@ bwars_formica_df <- read.csv('species_data/raw/20240105_bwars_data.csv') %>%
 ## Hymettus survey 2011 data -------------------------------------------------------------
 # These are historical sites re-sampled, so extension of BWARS data.
 # Definitely previously only sampled pre-2010, so there should not be duplicates with BWARS data
-hymettus_df <- read.csv('species_data/raw/HymettusSurveyEJHR.csv') %>% 
+hymettus_df <- read.csv('../Data/species_data/raw/HymettusSurveyEJHR.csv') %>% 
       mutate(easting = rnrfa::osg_parse(Gridref)$easting,
              northing = rnrfa::osg_parse(Gridref)$northing,
              accuracy = sapply(Gridref, determine_accuracy),
@@ -222,17 +222,17 @@ hymettus_df <- read.csv('species_data/raw/HymettusSurveyEJHR.csv') %>%
       as.data.frame(geom = 'XY') %>% 
       dplyr::select(species, x, y, date, OS_Tile, source)
 
-## Josie Monaghan survey 2018-2019 data -------------------------------------------------------------
+## Monaghan survey 2018-2019 data -------------------------------------------------------------
 # Also re-sampled BWARS sites. These are uncharacteristically close together sometimes though, 
 # thin with 100m buffer
-josie_1 <- read.csv('species_data/raw/josie_survey.csv') %>% 
+Monaghan_1 <- read.csv('../Data/species_data/raw/Monaghan_survey.csv') %>% 
       filter(Position != '', str_detect(Position, '[a-zA-Z0-9]')) %>% 
       dplyr::select(Species, Position, Date)
 
-josie_df <- read.csv('species_data/raw/josie_survey_2.csv') %>% 
+Monaghan_df <- read.csv('../Data/species_data/raw/Monaghan_survey_2.csv') %>% 
       filter(Position != '', str_detect(Position, '[a-zA-Z0-9]')) %>% 
       dplyr::select(Species, Position, Date) %>% 
-      rbind(josie_1) %>%  
+      rbind(Monaghan_1) %>%  
       mutate(Position = gsub('[^a-zA-Z0-9]', '', Position),
              easting = rnrfa::osg_parse(Position)$easting,
              northing = rnrfa::osg_parse(Position)$northing,
@@ -241,7 +241,7 @@ josie_df <- read.csv('species_data/raw/josie_survey_2.csv') %>%
              species = case_when(Species == 'ru' ~ 'Formica rufa',
                                  Species == 'rufa' ~ 'Formica rufa',
                                  Species == 'lu' ~ 'Formica lugubris'),
-             source = "Josie") %>% 
+             source = "Monaghan") %>% 
       rowwise() %>% 
       mutate(OS_Tile = OSGB(c(easting, northing), "10km")) %>% 
       filter(!is.na(species)) %>% 
@@ -252,26 +252,48 @@ josie_df <- read.csv('species_data/raw/josie_survey_2.csv') %>%
       dplyr::select(species, x, y, date, OS_Tile, source)
 
 # Apply thinning to date groups, ensuring that effort information is retained 
-josie_thinned <- group_thin_spatial(josie_df, group_var = "date", dist_meters = 100, crs_spec = km_proj) %>% 
+Monaghan_thinned <- group_thin_spatial(Monaghan_df, group_var = "date", dist_meters = 100, crs_spec = km_proj) %>% 
       dplyr::select(species, x, y, date, OS_Tile, source) 
 
+## sporadic data update MonitAnt - 3 nests per site so not exhaustive ------------------------------------------
+MA_S_df <- read.csv('../Data/species_data/raw/monitant_uk_data.csv')
+
+MA_S_df <-add_column(MA_S_df, OS_Tile = OSGB(cbind(MA_S_df$longitude, MA_S_df$latitude), "10km", geo=TRUE)) %>%
+ vect(geom = c('longitude', 'latitude'), crs = crs('epsg:4326'), keepgeom = FALSE) %>% 
+  terra::project(crs('epsg:27700')) %>% 
+  terra::crop(ROI_27700) %>%       
+  terra::project(crs(km_proj)) %>% 
+  as.data.frame(geom = 'XY') %>%
+  mutate(species = gsub("_", " ", antspecies),
+        date = dmy(date),
+        source = 'MonitAnt_S') %>% 
+  dplyr::select(species, x, y, date, OS_Tile, source)
+
+# Apply thinning to date groups, ensuring that effort information is retained
+MA_S_thinned <- group_thin_spatial(MA_S_df, group_var = "date", dist_meters = 100, crs_spec = km_proj) %>% 
+  dplyr::select(species, x, y, date, OS_Tile, source)  
+             
 ## BWARS F. nitidulus data -------------------------------------------------------------
 # F. nitidulus always occurs in wood ant nests. Can tell from latitude which wood ant, and derive their presence
 # Find limits of F. lugubris and F. rufa presence records, add a somewhat arbitrary 25 km buffer, just in case
+
 F_lugubris_lowest <- min(rbind(procter_df$y, 
                                longshaw_df$y,
                                bwars_formica_df$y[bwars_formica_df$species == "Formica lugubris"],
                                hymettus_df$y[hymettus_df$species == "Formica lugubris"],
-                               josie_thinned$y[josie_thinned$species == "Formica lugubris"],
-                               nym_df$y)) - 25 
+                               Monaghan_thinned$y[Monaghan_thinned$species == "Formica lugubris"],
+                               nym_df$y,
+                               MA_ex_df$y,
+                               MA_S_thinned$y[MA_S_thinned$species == "Formica lugubris"])) - 25 
 
 F_rufa_highest <- max(rbind(bwars_formica_df$y[bwars_formica_df$species == "Formica rufa"],
                             hymettus_df$y[hymettus_df$species == "Formica rufa"],
-                            josie_thinned$y[josie_thinned$species == "Formica rufa"],
+                            Monaghan_thinned$y[Monaghan_thinned$species == "Formica rufa"],
                             dallimore_df$y), 
-                            gaitbarrows_df$y) + 25 
+                            gaitbarrows_df$y,
+                            MA_S_thinned$y[MA_S_thinned$species == "Formica rufa"]) + 25 
 
-bwars_nitidulus_df <- read.csv('species_data/raw/Formicoxenus nitidulus records BWARS to 2021.csv') %>% 
+bwars_nitidulus_df <- read.csv('../Data/species_data/raw/Formicoxenus_nitidulus_records_BWARS_to_2021.csv') %>% 
       mutate(easting = rnrfa::osg_parse(gridref)$easting,
              northing = rnrfa::osg_parse(gridref)$northing,
              accuracy = sapply(gridref, determine_accuracy),
