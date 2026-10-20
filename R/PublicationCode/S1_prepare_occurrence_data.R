@@ -2,7 +2,8 @@
 #
 # Author: Joris Wiethase
 # Email: j.wiethase@gmail.com
-# 
+# Updated by Jack Hatfield 10/2026 
+#
 # Script Description:  
 # Collate and process available species records for the study species. Extract sampling effort.
 library(tidyverse)
@@ -13,20 +14,21 @@ library(tidyterra)
 library(geosphere)
 source('source/misc_functions.R')
 
-ROI_27700 <- vect('spatial_other/ROI_outline_27700.shp')
+ROI_27700 <- vect('../Data/spatial_other/ROI_outline_27700.shp')
 
 # EXHAUSTIVE SURVEY DATA -------------------------------------------------
 # Surveys where every single nest (or close to every nest) was recorded within a study area
+
 ## Procter et al. 2015 data -------------------------------------------------------------
-procter_df <- read.csv('species_data/raw/Procter_nests.csv') %>% 
+procter_df <- read.csv('../Data/species_data/raw/Procter2015_nests.csv') %>% 
       vect(geom = c('x_proj', 'y_proj'), crs = crs('epsg:27700'), keepgeom = FALSE) %>% 
       terra::crop(ROI_27700) %>%
       terra::project(crs(km_proj)) %>%
       as.data.frame(geom = 'XY') %>% 
       mutate(source = "procter")
 
-## David and Elva 2019 data -------------------------------------------------------------
-gaitbarrows_df <- read.csv('species_data/raw/Formica_rufa_Survey_Data_2019_David_Lamin_Elva_Robinson.csv') %>% 
+## Lamin and Robinson 2019 data -------------------------------------------------------------
+gaitbarrows_df <- read.csv('../Data/species_data/raw/Formica_rufa_Survey_Data_2019_Lamin_Robinson.csv') %>% 
       mutate(Grid.Reference = gsub(" ", "", Grid.Reference), 
              easting = rnrfa::osg_parse(Grid.Reference)$easting,
              northing = rnrfa::osg_parse(Grid.Reference)$northing,
@@ -41,7 +43,7 @@ gaitbarrows_df <- read.csv('species_data/raw/Formica_rufa_Survey_Data_2019_David
       dplyr::select(species, x, y, source)
 
 ## Hardcastle data -------------------------------------------------------------
-hardcastle_df <- vect('species_data/raw/2023_Anthills.gpkg') %>% 
+hardcastle_df <- vect('../Data/species_data/raw/2023_Anthills.gpkg') %>% 
       terra::crop(ROI_27700) %>%
       terra::project(crs(km_proj)) %>%  
       as.data.frame(geom = 'XY') %>% 
@@ -50,35 +52,35 @@ hardcastle_df <- vect('species_data/raw/2023_Anthills.gpkg') %>%
       dplyr::select(species, x, y, source)
 
 ## NYM data -------------------------------------------------------------
-nym_1 <- vect('species_data/raw/NYM/All 2018 field season data_all sites.shp') %>% 
+nym_1 <- vect('../Data/species_data/raw/NYM/All_2018_field_data.shp') %>% 
       project(crs("epsg:27700")) %>% 
       crop(ROI_27700) %>% 
       as.data.frame(geom = 'XY') %>% 
       mutate(date = date(ymd_hms(time))) %>% 
       dplyr::select(x, y, date)
 
-nym_2 <- vect('species_data/raw/NYM/Broxa 2019.shp') %>% 
+nym_2 <- vect('../Data/species_data/raw/NYM/Broxa_2019.shp') %>% 
       project(crs("epsg:27700")) %>% 
       crop(ROI_27700) %>% 
       as.data.frame(geom = 'XY') %>% 
       mutate(date = date(ymd_hms(time))) %>% 
       dplyr::select(x, y, date)
 
-nym_3 <- vect('species_data/raw/NYM/Cropton margins 2019_1.shp') %>% 
+nym_3 <- vect('../Data/species_data/raw/NYM/Cropton_margins_2019_1.shp') %>% 
       project(crs("epsg:27700")) %>% 
       crop(ROI_27700) %>% 
       as.data.frame(geom = 'XY') %>% 
       mutate(date = date(ymd_hms(time))) %>% 
       dplyr::select(x, y, date)
 
-nym_4 <- vect('species_data/raw/NYM/Cropton margins 2019_2.shp') %>% 
+nym_4 <- vect('../Data/species_data/raw/NYM/Cropton_margins_2019_2.shp') %>% 
       project(crs("epsg:27700")) %>% 
       crop(ROI_27700) %>% 
       as.data.frame(geom = 'XY') %>% 
       mutate(date = date(ymd_hms(time))) %>% 
       dplyr::select(x, y, date)
 
-nym_5 <- read.csv('species_data/raw/NYM/cropton_margins_nest_data_2020.csv') %>% 
+nym_5 <- read.csv('../Data/species_data/raw/NYM/cropton_margins_nest_data_2020.csv') %>% 
       dplyr::select(Lng, Lat, Date.visited) %>% 
       drop_na() %>% 
       vect(geom = c('Lat', 'Lng'), crs = crs('epsg:4326')) %>% # Coordinate names switched in original data
@@ -88,7 +90,7 @@ nym_5 <- read.csv('species_data/raw/NYM/cropton_margins_nest_data_2020.csv') %>%
       mutate(date = date(ymd_hms(Date.visited))) %>% 
       dplyr::select(x, y, date)
 
-nym_6 <- read.csv('species_data/raw/NYM/X000 to C000 with lat and long.csv') %>% 
+nym_6 <- read.csv('../Data/species_data/raw/NYM/X000_to_C000_with_lat_and_long.csv') %>% 
       vect(geom = c('Longitude', 'Latitude'), crs = crs('epsg:4326')) %>% 
       terra::project(crs("epsg:27700")) %>% 
       crop(ROI_27700) %>% 
@@ -96,28 +98,28 @@ nym_6 <- read.csv('species_data/raw/NYM/X000 to C000 with lat and long.csv') %>%
       mutate(date = NA) %>% 
       dplyr::select(x, y, date)
 
-nym_7 <- vect('species_data/raw/NYM/nests_remapped.shp') %>% 
+nym_7 <- vect('../Data/species_data/raw/NYM/nests_remapped.shp') %>% 
       project(crs("epsg:27700")) %>% 
       crop(ROI_27700) %>% 
       as.data.frame(geom = 'XY') %>% 
       mutate(date = NA) %>% 
       dplyr::select(x, y, date)
 
-nym_8 <- vect('species_data/raw/NYM/Cropton nests 2020.gpx') %>% 
+nym_8 <- vect('../Data/species_data/raw/NYM/Cropton_nests_2020.gpx') %>% 
       project(crs("epsg:27700")) %>% 
       crop(ROI_27700) %>% 
       as.data.frame(geom = 'XY') %>% 
       mutate(date = NA) %>% 
       dplyr::select(x, y, date)
 
-nym_9 <- vect('species_data/raw/NYM/Broxa margins 2020.gpx') %>% 
+nym_9 <- vect('../Data/species_data/raw/NYM/Broxa_margins_2020.gpx') %>% 
       project(crs("epsg:27700")) %>% 
       crop(ROI_27700) %>% 
       as.data.frame(geom = 'XY') %>% 
       mutate(date = NA) %>% 
       dplyr::select(x, y, date)
 
-nym_10 <- vect('species_data/raw/NYM/NYM_nest_2022.gpx') %>% 
+nym_10 <- vect('../Data/species_data/raw/NYM/NYM_nest_2022.gpx') %>% 
       project(crs("epsg:27700")) %>% 
       crop(ROI_27700) %>% 
       as.data.frame(geom = 'XY') %>% 
@@ -135,7 +137,8 @@ nym_df <- rbind(nym_1, nym_2, nym_3, nym_4, nym_5, nym_6, nym_7, nym_8, nym_9, n
 ## Longshaw data -------------------------------------------------------------
 ## Small forest patches resampled frequently. Not technically exhaustive for the wider area,
 ## but for these small patches. Most suitable in exhaustive category due to dense sampling
-longshaw_df <- read.csv('species_data/raw/FormicaLugubrisNestsLongshawEJHR2022.csv') %>% 
+
+longshaw_df <- read.csv('../Data/species_data/raw/FormicaLugubrisNestsLongshawEJHR2022.csv') %>% 
       vect(geom = c('lon', 'lat'), crs = crs('epsg:4326'), keepgeom = FALSE) %>% 
       terra::project(crs('epsg:27700')) %>% 
       terra::crop(ROI_27700) %>%       
@@ -145,11 +148,12 @@ longshaw_df <- read.csv('species_data/raw/FormicaLugubrisNestsLongshawEJHR2022.c
              source = 'Longshaw') %>% 
       dplyr::select(species, x, y, source)
 
-## Tom Dallimore data -------------------------------------------------------------
+## Dallimore data -------------------------------------------------------------
 ## Quite dense. We have detailed effort information (days visited), but effort differs from sporadic data
 ## (sampled numerous nests in one forest in one day)
+
 dallimore_df <- do.call(rbind, 
-                        lapply(list.files("species_data/raw/dallimore_data/", pattern = ".csv", full.names = T), 
+                        lapply(list.files("../Data/species_data/raw/dallimore_data/", pattern = ".csv", full.names = T), 
                                read_and_select, type = "csv", cols = c('Longitude', 'Latitude', 'Nest.ID')
                         )) %>% 
       vect(geom = c('Longitude', 'Latitude'), crs = crs('epsg:4326'), keepgeom = FALSE) %>% 
@@ -161,11 +165,24 @@ dallimore_df <- do.call(rbind,
              source = 'dallimore') %>% 
       dplyr::select(species, x, y, source)
 
+## MonitAnt 2025 exhaustive -----------------------------------------------------------
+# Dense sampling from MonitAnt
+MA_ex_df <- read.csv('../Data/species_data/raw/MonitAnt_20251028_sent.csv') %>% 
+  vect(geom = c('Longitude', 'Latitude'), crs = crs('epsg:4326'), keepgeom = FALSE) %>% 
+  terra::project(crs('epsg:27700')) %>%
+  terra::crop(ROI_27700) %>%
+  terra::project(crs(km_proj)) %>%
+  as.data.frame(geom = 'XY') %>% 
+  mutate(species = Species,
+         source = "MA_ex") %>% 
+  dplyr::select(species, x, y, source)
+
 ## Combine exhaustive data -------------------------------------------------------------
-exhaustive_combined <- rbind(procter_df, gaitbarrows_df, hardcastle_df, nym_df, longshaw_df, dallimore_df)
+exhaustive_combined <- rbind(procter_df, gaitbarrows_df, hardcastle_df, nym_df, longshaw_df, dallimore_df, MA_ex_df)
 
 # SPORADIC SURVEY DATA -------------------------------------------------
 # Surveys where volunteers mostly recorded one nest and then moved on
+
 ## BWARS data -------------------------------------------------------------
 bwars_formica_df <- read.csv('species_data/raw/20240105_bwars_data.csv') %>% 
       mutate(easting = rnrfa::osg_parse(gridref)$easting,
