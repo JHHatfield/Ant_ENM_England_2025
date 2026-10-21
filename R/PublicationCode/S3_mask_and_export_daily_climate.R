@@ -11,8 +11,8 @@ library(tidyterra)
 library(terra)
 source('source/misc_functions.R')
 
-ROI <- vect('spatial_other/ROI_kmproj.shp')
-list <- list.files("covariates/raw/rcp85", full.names = T, recursive = T)
+ROI <- vect('../Data/spatial_other/ROI_kmproj.shp')
+list <- list.files("../Data/covariates/raw/rcp85", full.names = T, recursive = T)
 
 crop_and_export <- function(filepath){
       img <- rast(filepath) %>% 
@@ -21,7 +21,7 @@ crop_and_export <- function(filepath){
             mask(ROI) 
       
       writeRaster(img,
-                  paste0("covariates/processed/rcp85_masked/",
+                  paste0("../Data/covariates/processed/rcp85_masked/",
                          basename(filepath),
                          ".tif"),
                   overwrite = T)
