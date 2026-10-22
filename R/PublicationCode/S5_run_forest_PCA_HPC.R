@@ -11,7 +11,7 @@ library(tidyterra)
 library(terra)
 
 # Load data ----------------------------------------------------
-forest_stack <- rast('Ant_ENM/data/forest_stack_30m.tif')
+forest_stack <- rast('../Data/covariates/processed/forest_stack_30m.tif')
 
 forest_mask_buff <- forest_stack$forest_mask_buff %>%
    subst(0, NA)
@@ -56,9 +56,9 @@ names(forest_PC_stack) <- gsub("PC", "forest_PC", names(forest_PC_stack))
 
 
 # Export ----------------------------------------------------
-# write.csv(forest_cumulative_df, "covariates/processed/HPC_forest_cumulative_df.csv")
-# fwrite(forest_scores_df, "covariates/processed/HPC_forest_scores_df.csv")
-write.csv(forest_loadings_df, "Ant_ENM/data/HPC_forest_loadings_df.csv")
-writeRaster(forest_PC_stack, paste0("Ant_ENM/data/forest_PCA_30m.tif"), overwrite=TRUE)
+# write.csv(forest_cumulative_df, "../Data/covariates/processed/HPC_forest_cumulative_df.csv")
+# fwrite(forest_scores_df, "../Data/covariates/processed/HPC_forest_scores_df.csv")
+write.csv(forest_loadings_df, "../Data/covariates/processed/HPC_forest_loadings_df.csv")
+writeRaster(forest_PC_stack, paste0("../Data/covariates/processed/forest_PCA_30m.tif"), overwrite=TRUE)
 
 
