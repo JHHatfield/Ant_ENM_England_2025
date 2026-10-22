@@ -23,8 +23,8 @@ for(period in c('current', 'rcp45', 'rcp85')){
       if(period == 'current'){
             start_year = 2010
             end_year = 2013
-            temp_files <- list.files(path = paste0("covariates/processed/", period, "_masked"), pattern = "1km_mon", full.names = TRUE)
-            rain_files <- list.files(path = paste0("covariates/processed/", period, "_masked"), pattern = "1km_day", full.names = TRUE)
+            temp_files <- list.files(path = paste0("../Data/covariates/processed/", period, "_masked"), pattern = "1km_mon", full.names = TRUE)
+            rain_files <- list.files(path = paste0("../Data/covariates/processed/", period, "_masked"), pattern = "1km_day", full.names = TRUE)
             
             temp_stack <- rast(temp_files)
             names(temp_stack) <- sprintf("%d%02d", rep(start_year:end_year, each = 12), 1:12)
@@ -32,8 +32,8 @@ for(period in c('current', 'rcp45', 'rcp85')){
       } else {
             start_year = 2070
             end_year = 2073
-            temp_files <- list.files(path = paste0("covariates/processed/", period, "_masked"), pattern = "tas_uk_1km_monthly", full.names = TRUE)
-            rain_files <- list.files(path = paste0("covariates/processed/", period, "_masked"), pattern = "pr_uk_1km_daily", full.names = TRUE)
+            temp_files <- list.files(path = paste0("../Data/covariates/processed/", period, "_masked"), pattern = "tas_uk_1km_monthly", full.names = TRUE)
+            rain_files <- list.files(path = paste0("../Data/covariates/processed/", period, "_masked"), pattern = "pr_uk_1km_daily", full.names = TRUE)
             
             temp_stack <- rast(temp_files) 
             temp_stack <- temp_stack %>% subset(which(year(time(.)) %in% seq(start_year, end_year, 1)))
@@ -223,6 +223,6 @@ for(period in c('current', 'rcp45', 'rcp85')){
                                                  'perc01_temp_coldest', 'perc09_temp_hottest',
                                                  'dry_duration_09perc', 'annual_mean_temp', 'annual_sd_temp', 'temp_seasonality'))
       
-      writeRaster(clim_stack, paste0("covariates/processed/", period, "_clim_stack.tif"), overwrite = TRUE)
+      writeRaster(clim_stack, paste0("../Data/covariates/processed/", period, "_clim_stack.tif"), overwrite = TRUE)
 }
 
