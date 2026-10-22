@@ -11,11 +11,11 @@ library(tidyterra)
 library(terra)
 source('source/misc_functions.R')
 
-ROI <- vect('spatial_other/ROI_kmproj.shp') 
-ROI_27700 <- vect('spatial_other/ROI_outline_27700.shp') 
+ROI <- vect('../Data/spatial_other/ROI_kmproj.shp') 
+ROI_27700 <- vect('../Data/spatial_other/ROI_outline_27700.shp') 
 
 # Directory where the large raster files are located
-covar_dir <- '/Users/joriswiethase/Library/CloudStorage/GoogleDrive-j.wiethase@gmail.com/My Drive/Ant modelling/Ant_ENM_England_old/covariates'
+covar_dir <- '../Data/covariates/'
 
 # Forest ----------------------------------------------------
 ## Forest characteristics ----------------------------------------------------
@@ -46,7 +46,7 @@ distance_forest <- terra::distance(forest_mask, unit = "m") %>%
 
 ## Forest mask layer ----------------------------------------------------
 ## How far away were most ant records found?
-sporadic <- vect('species_data/processed_shp/sporadic_combined.shp')
+sporadic <- vect('../Data/species_data/processed_shp/sporadic_combined.shp')
 vals <- terra::extract(distance_forest, sporadic, ID = F)
 distance_upper <- quantile(vals$cover_VOM, probs = 0.95)
 print(distance_upper)
@@ -85,7 +85,7 @@ topo_stack_30m <- c(northness_30m, eastness_30m, hillshade_30m, slope_30m) %>%
 names(topo_stack_30m) <- c('northness', 'eastness', 'hillshade', 'slope')
 
 # Effort raster ----------------------------------------------------
-effort_lgcp_vector <- vect("spatial_other/effort_lgcp_10km.shp") 
+effort_lgcp_vector <- vect("../Data/spatial_other/effort_lgcp_10km.shp") 
 
 rast_OS_grid <- rast(ext = ext(effort_lgcp_vector), crs = crs(effort_lgcp_vector), res = 10, vals = 1)
 
@@ -96,9 +96,9 @@ effort_rast_lgcp_10km <- rasterize(effort_lgcp_vector, rast_OS_grid, field = "da
    log() 
 
 # Export ----------------------------------------------------
-writeRaster(forest_stack_30m, "covariates/processed/forest_stack_30m.tif", overwrite = TRUE)
-writeRaster(distance_forest, "covariates/processed/distance_forest_30m.tif", overwrite = TRUE)
-writeRaster(topo_stack_30m, "covariates/processed/topo_stack_30m.tif", overwrite=TRUE)
-writeRaster(effort_rast_lgcp_10km, "covariates/processed/effort_rast_lgcp_10km.tif", overwrite=TRUE)
+writeRaster(forest_stack_30m, "../Data/covariates/processed/forest_stack_30m.tif", overwrite = TRUE)
+writeRaster(distance_forest, "../Data/covariates/processed/distance_forest_30m.tif", overwrite = TRUE)
+writeRaster(topo_stack_30m, "../Data/covariates/processed/topo_stack_30m.tif", overwrite=TRUE)
+writeRaster(effort_rast_lgcp_10km, "../Data/covariates/processed/effort_rast_lgcp_10km.tif", overwrite=TRUE)
 
 
