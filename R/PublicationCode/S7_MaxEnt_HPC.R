@@ -1,3 +1,14 @@
+# HEADER --------------------------------------------
+#
+# Author: Joris Wiethase
+# Email: j.wiethase@gmail.com
+#
+# Edited by Jack Hatfield 10/2026
+# 
+# Script Description:  
+# Runs MaxEnt model across a range of settings
+
+
 options(java.parameters = "-Xmx64g") 
 library(rJava)
 library(ENMeval)
